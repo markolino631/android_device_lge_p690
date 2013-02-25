@@ -1,6 +1,5 @@
 /*
 ** Copyright 2008, The Android Open-Source Project
-** Copyright (c) 2012, Code Aurora Forum. All rights reserved.
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -27,17 +26,11 @@
 #include <hardware_legacy/AudioHardwareBase.h>
 
 extern "C" {
-#include <linux/msm_audio.h>
-#include <linux/msm_audio_voicememo.h>
-#include <linux/msm_audio_aac.h>
-#include <linux/msm_audio_amrnb.h>
-#include <linux/msm_audio_qcp.h>
+#include <msm_audio.h>
+#include <msm_audio_voicememo.h>
 }
 
-namespace android_audio_legacy {
-using android::SortedVector;
-using android::Mutex;
-
+namespace android {
 
 // ----------------------------------------------------------------------------
 // Kernel driver interface
@@ -67,6 +60,9 @@ using android::Mutex;
 #define AGC_ENABLE     0x0001
 #define NS_ENABLE      0x0002
 #define TX_IIR_ENABLE  0x0004
+
+#define DEVICE_OUT_SPEAKER_IN_CALL 0x2000
+#define DEVICE_OUT_SPEAKER_RING 0x4000
 
 struct eq_filter_type {
     int16_t gain;
@@ -159,11 +155,6 @@ enum tty_modes {
 #define AUDIO_HW_IN_FORMAT (AudioSystem::PCM_16_BIT)  // Default audio input sample format
 // ----------------------------------------------------------------------------
 
-using android_audio_legacy::AudioHardwareBase;
-using android_audio_legacy::AudioStreamOut;
-using android_audio_legacy::AudioStreamIn;
-using android_audio_legacy::AudioSystem;
-using android_audio_legacy::AudioHardwareInterface;
 class AudioHardware : public  AudioHardwareBase
 {
     class AudioStreamOutMSM72xx;
@@ -191,7 +182,6 @@ public:
     // create I/O streams
     virtual AudioStreamOut* openOutputStream(
                                 uint32_t devices,
-                                audio_output_flags_t flags,
                                 int *format=0,
                                 uint32_t *channels=0,
                                 uint32_t *sampleRate=0,
@@ -292,8 +282,6 @@ private:
         virtual unsigned int  getInputFramesLost() const { return 0; }
                 uint32_t    devices() { return mDevices; }
                 int         state() const { return mState; }
-        virtual status_t    addAudioEffect(effect_interface_s**) { return 0;}
-        virtual status_t    removeAudioEffect(effect_interface_s**) { return 0;}
 
     private:
                 AudioHardware* mHardware;
@@ -320,14 +308,12 @@ private:
             msm_snd_endpoint *mSndEndpoints;
             int mNumSndEndpoints;
             int mCurSndDevice;
-            int m7xsnddriverfd;
-            bool mDualMicEnabled;
-            int  mTtyMode;
-            bool mBuiltinMicSelected;
 #ifdef HAVE_FM_RADIO
-            int mFmRadioEnabled;
-            int mFmPrev;
+            bool mFmRadioEnabled;
 #endif
+            int m7xsnddriverfd;
+            bool        mDualMicEnabled;
+            int         mTtyMode;
 
      friend class AudioStreamInMSM72xx;
             Mutex       mLock;
