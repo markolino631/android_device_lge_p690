@@ -16,6 +16,7 @@
 /dev/graphics/*           0660   system     graphics
 /dev/msm_rotator          0660   system     graphics
 /dev/input/*              0660   system     input
+/dev/cam                  0660   root       camera
 /dev/pmem_audio           0660   system     audio
 /dev/pmem_smipool*        0660   system     camera
 /dev/msm_camera/*         0660   media      system
